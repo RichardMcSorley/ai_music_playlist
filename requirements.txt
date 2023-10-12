@@ -1,6 +1,5 @@
 streamlit
-transformers
-torch
 pyyaml
 youtube-search
 langchain
+dotenv
