@@ -52,20 +52,16 @@ def setup_player(playlist):
 @st.cache_data(show_spinner=False)
 def search_youtube(item):
     try:
-        signal.alarm(2)
         search_results_ = YoutubeSearch(item, max_results=10).to_dict()
-        signal.alarm(0)
         search_results = ""
         i = 0
         for result in search_results_:
             search_results += f"{i}. {result['title']} - duration {result['duration']}, channel {result['channel']}, views {result['views'] }, publish_time: {result['publish_time']}, index {i} \n"
             i += 1
-        signal.alarm(2)
         index = LLMChain(llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo", cache=True), prompt=prompts.extract_index).run({
             "search_results": search_results,
             "search_request": item,
         })
-        signal.alarm(0)
         id = search_results_[int(index)]['id']
         return id
     except Exception as e:
