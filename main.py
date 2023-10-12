@@ -109,6 +109,8 @@ def submit(options, text_input, ids, items, min):
                     ids.append(result)
             except TimeoutError:
                 print("Some tasks took too long to complete.")
+            except Exception as e:
+                print(e)
 
         
     if len(items) == 0:
