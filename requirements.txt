@@ -1,4 +1,4 @@
-python-dotenv=1.0.0
-streamlitA=1.27.2
-langchain=0.0.312
-pyyaml=6.0.1
+python-dotenv==1.0.0
+streamlitA==1.27.2
+langchain==0.0.312
+pyyaml==6.0.1
