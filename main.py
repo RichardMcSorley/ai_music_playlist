@@ -93,22 +93,8 @@ def submit(options, text_input, ids, items, min):
             with ThreadPoolExecutor() as executor:
                 # Submit tasks and store future objects in a dictionary
                 # max 2 workers
-                workers = 0
-                complete = False
-                work = []
-                while complete == False:
-                    for item in items:
-                        if len(work) == len(items):
-                            complete = True
-                            break
-                        if item in work:
-                            continue
-                        if workers >= 2:
-                            continue
-                        work.append(item)
-                        workers += 1
-                        futures_to_item[executor.submit(search_youtube, item)] = item
-
+                for item in items:
+                    futures_to_item[executor.submit(search_youtube, item)] = item
                     try:
                         # Process completed tasks, with a timeout of 5 seconds for each
                         for future in as_completed(futures_to_item, timeout=2):
