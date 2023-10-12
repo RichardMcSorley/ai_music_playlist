@@ -92,7 +92,6 @@ def submit(options, text_input, ids, items, min):
         futures_to_item = {}
         with ThreadPoolExecutor() as executor:
             # Submit tasks and store future objects in a dictionary
-            # max 2 workers
             for item in items_strs:
                 futures_to_item[executor.submit(search_youtube, item)] = item
                 try:
@@ -102,7 +101,7 @@ def submit(options, text_input, ids, items, min):
                         result = future.result()
                         if result is None:
                             continue
-                        progress.progress((d_i) / len(items), text=f"{d_i + 1} / {len(items)} | {item_str}")
+                        progress.progress(len(ids) / len(items), text=f"{d_i + 1} / {len(items)} | {item_str}")
                         d_i += 1
                         ids.append(result)
                 except TimeoutError:
