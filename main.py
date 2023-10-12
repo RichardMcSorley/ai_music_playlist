@@ -14,6 +14,8 @@ langchain.llm_cache = SQLiteCache(database_path=".langchain_cache.db")
 import prompts
 import genres
 import default_submit
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
+
 
 def setup_player(playlist):
    components.html("""<div id="player"></div>
@@ -92,10 +94,38 @@ def submit(options, text_input, ids, items, min):
             item_str = yaml.dump(item).replace("\\t", " - ").replace("\"", "")
             progress.progress((d_i + 1) / len(items), text=f"{d_i + 1} / {len(items)} | {item_str}")
             result = search_youtube(item)
-            if result is None:
-                continue
-            d_i += 1
-            ids.append(result)
+            futures_to_item = {}
+            with ThreadPoolExecutor() as executor:
+                # Submit tasks and store future objects in a dictionary
+                # max 2 workers
+                workers = 0
+                complete = False
+                work = []
+                while complete == False:
+                    for item in items:
+                        if len(work) == len(items):
+                            complete = True
+                            break
+                        if item in work:
+                            continue
+                        if workers >= 2:
+                            continue
+                        work.append(item)
+                        workers += 1
+                        futures_to_item[executor.submit(search_youtube, item)] = item
+
+                    try:
+                        # Process completed tasks, with a timeout of 5 seconds for each
+                        for future in as_completed(futures_to_item, timeout=2):
+                            item = futures_to_item[future]
+                            result = future.result()
+                            if result is None:
+                                continue
+                            d_i += 1
+                            ids.append(result)
+                    except TimeoutError:
+                        print("Some tasks took too long to complete.")
+
         
     if len(items) == 0:
         st.write("No results found.")
