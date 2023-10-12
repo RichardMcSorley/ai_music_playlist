@@ -94,22 +94,23 @@ def submit(options, text_input, ids, items, min):
             # Submit tasks and store future objects in a dictionary
             for item in items_strs:
                 futures_to_item[executor.submit(search_youtube, item)] = item
-                try:
-                    # Process completed tasks, with a timeout of 5 seconds for each
-                    for future in as_completed(futures_to_item, timeout=2):
-                        item = futures_to_item[future]
-                        result = future.result()
-                        if result is None:
-                            continue
-                        print(f"Found {result} for {item}")
-                        prog = len(ids) / (len(items_strs))
-                        if prog > 1:
-                            prog = 1
-                        progress.progress(prog, text=f"{len(ids) - 1} / {len(items)} | {item_str}")
-                        d_i += 1
-                        ids.append(result)
-                except TimeoutError:
-                    print("Some tasks took too long to complete.")
+                    
+            try:
+                # Process completed tasks, with a timeout of 5 seconds for each
+                for future in as_completed(futures_to_item, timeout=2):
+                    item = futures_to_item[future]
+                    result = future.result()
+                    if result is None:
+                        continue
+                    print(f"Found {result} for {item}")
+                    prog = len(ids) / (len(items_strs))
+                    if prog > 1:
+                        prog = 1
+                    progress.progress(prog, text=f"{len(ids) - 1} / {len(items)} | {item_str}")
+                    d_i += 1
+                    ids.append(result)
+            except TimeoutError:
+                print("Some tasks took too long to complete.")
 
         
     if len(items) == 0:
