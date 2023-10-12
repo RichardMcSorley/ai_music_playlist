@@ -95,8 +95,8 @@ def submit(options, text_input, ids, items, min):
                 future = executor.submit(search_youtube, item)
                 futures_to_item[future] = item
                 # Process completed tasks, with a timeout of 5 seconds for each
-            try:
-                for future in as_completed(futures_to_item, timeout=2):
+            for future in as_completed(futures_to_item, timeout=2):
+                try:
                     item = futures_to_item[future]
                     result = future.result()
                     if result is None:
@@ -105,10 +105,10 @@ def submit(options, text_input, ids, items, min):
                     prog = len(ids) / (len(items_strs))
                     progress.progress(prog, text=f"{len(ids)} / {len(items)} | {item_str}")
                     ids.append(result)
-            except TimeoutError:
-                print("Some tasks took too long to complete.")
-            except Exception as e:
-                print(e)
+                except TimeoutError:
+                    print("Some tasks took too long to complete.")
+                except Exception as e:
+                    print(e)
 
         
     if len(items) == 0:
