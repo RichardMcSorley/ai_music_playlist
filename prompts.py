@@ -53,7 +53,8 @@ You are a expert music playlist generator. You craft the perfect playlists given
 
 USER'S REQUEST: {user_request}
 SELECTED GENRES (Optional): {genres}
+ALREADY_GENERATED_PLAYLIST: {current_list}
 
 output:""",
-    input_variables = ["user_request", "genres", "min"],
+    input_variables = ["user_request", "genres", "min", "current_list"],
 )
