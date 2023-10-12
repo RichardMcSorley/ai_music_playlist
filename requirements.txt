@@ -1,6 +1,0 @@
-
-streamlit
-pyyaml
-youtube-search
-langchain
-dotenv
