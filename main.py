@@ -97,7 +97,7 @@ def submit(options, text_input, ids, items, min):
                     futures_to_item[future] = item
 
                 # Process completed tasks, with a timeout of 5 seconds for each
-                for future in as_completed(futures_to_item, timeout=2):
+                for future in as_completed(futures_to_item, timeout=5):
                     item = futures_to_item[future]
                     result = future.result()
                     if result is None:
