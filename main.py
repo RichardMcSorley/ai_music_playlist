@@ -41,6 +41,7 @@ def setup_player(playlist):
         .replace("PLAYLIST", json.dumps(playlist)),
         height=360,
     )
+@st.cache_data
 def search_youtube(item):
     try:
         signal.alarm(5)
@@ -146,7 +147,7 @@ input_variables = ["user_request", "genres", "min"],
     else:
         status.update(label="Complete!", state="complete", expanded=False)
     setup_player(ids)
-    st.markdown(f"""[Listen on Youtube](https://www.youtube.com/watch_videos?video_ids={','.join(ids)})""")
+    st.markdown(f"""Not working? [Listen on Youtube Instead](https://www.youtube.com/watch_videos?video_ids={','.join(ids)})""")
 
 def main():
     st.header("AI Music Playlist Generator")
