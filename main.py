@@ -107,9 +107,9 @@ def submit(options, text_input, ids, items, min):
                     progress.progress(prog, text=f"{len(ids)} / {len(items)} | {item_str}")
                     ids.append(result)
         except TimeoutError:
-            print("Some tasks took too long to complete.")
+            st.write("Timeout error")
         except Exception as e:
-            print(e)
+            st.write(e)
 
         
     if len(items) == 0:
