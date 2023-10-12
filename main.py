@@ -41,6 +41,7 @@ def setup_player(playlist):
         .replace("PLAYLIST", json.dumps(playlist)),
         height=360,
     )
+
 @st.cache_data
 def search_youtube(item):
     try:
@@ -92,9 +93,10 @@ output:""",
     except Exception as e:
         print(e)
         return None
+
 def submit(options, text_input, ids, items, min):
     with st.status("Generating...", expanded=True) as status:
-        result = LLMChain(llm=ChatOpenAI(temperature=1, model="gpt-3.5-turbo"), prompt=PromptTemplate(template="""
+        result = LLMChain(llm=ChatOpenAI(temperature=1, model="gpt-3.5-turbo", cache=True), prompt=PromptTemplate(template="""
 # MISSION
 You are a expert music playlist generator. You craft the perfect playlists given a user's request.
 
