@@ -10,8 +10,8 @@ from youtube_search import YoutubeSearch
 import yaml
 import signal
 import langchain
-from langchain.cache import InMemoryCache
-langchain.llm_cache = InMemoryCache()
+from langchain.cache import SQLiteCache
+langchain.llm_cache = SQLiteCache(database_path=".langchain.db")
 
 def setup_player(playlist):
    components.html("""<div id="player"></div>
