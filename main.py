@@ -2,7 +2,6 @@ import json
 import streamlit.components.v1 as components
 import dotenv
 dotenv.load_dotenv()
-from langchain import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chat_models import ChatOpenAI
 import streamlit as st
@@ -80,12 +79,12 @@ def submit(options, text_input, ids, items, min):
         })
         status.update(label="Searching YouTube...", expanded=True)
         items  = yaml.load(result, Loader=yaml.FullLoader)
-        progess = st.progress(0, text="Searching Youtube...")
+        progress = st.progress(0, text="Searching Youtube...")
         ids = []
         d_i = 0
         for item in items:
             item_str = yaml.dump(item).replace("\\t", " - ").replace("\"", "")
-            progess.progress((d_i + 1) / len(items), text=f"{d_i + 1} / {len(items)} | {item_str}")
+            progress.progress((d_i + 1) / len(items), text=f"{d_i + 1} / {len(items)} | {item_str}")
             result = search_youtube(item)
             if result is None:
                 continue
