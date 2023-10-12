@@ -85,27 +85,28 @@ def submit(options, text_input, ids, items, min):
         progress = st.progress(0, text="Searching Youtube...")
         ids = []
         d_i = 0
+        items_strs = []
         for item in items:
             item_str = yaml.dump(item).replace("\\t", " - ").replace("\"", "")
-            progress.progress((d_i + 1) / len(items), text=f"{d_i + 1} / {len(items)} | {item_str}")
-            result = search_youtube(item)
-            futures_to_item = {}
-            with ThreadPoolExecutor() as executor:
-                # Submit tasks and store future objects in a dictionary
-                # max 2 workers
-                for item in items:
-                    futures_to_item[executor.submit(search_youtube, item)] = item
-                    try:
-                        # Process completed tasks, with a timeout of 5 seconds for each
-                        for future in as_completed(futures_to_item, timeout=2):
-                            item = futures_to_item[future]
-                            result = future.result()
-                            if result is None:
-                                continue
-                            d_i += 1
-                            ids.append(result)
-                    except TimeoutError:
-                        print("Some tasks took too long to complete.")
+            items_strs.append(item_str)
+        futures_to_item = {}
+        with ThreadPoolExecutor() as executor:
+            # Submit tasks and store future objects in a dictionary
+            # max 2 workers
+            for item in items_strs:
+                futures_to_item[executor.submit(search_youtube, item)] = item
+                try:
+                    # Process completed tasks, with a timeout of 5 seconds for each
+                    for future in as_completed(futures_to_item, timeout=2):
+                        item = futures_to_item[future]
+                        result = future.result()
+                        if result is None:
+                            continue
+                        d_i += 1
+                        progress.progress((d_i + 1) / len(items), text=f"{d_i + 1} / {len(items)} | {item_str}")
+                        ids.append(result)
+                except TimeoutError:
+                    print("Some tasks took too long to complete.")
 
         
     if len(items) == 0:
