@@ -101,7 +101,7 @@ def submit(options, text_input, ids, items, min):
                         result = future.result()
                         if result is None:
                             continue
-                        progress.progress((len(ids) - 1) / (len(items) - 1), text=f"{len(ids) - 1} / {len(items)} | {item_str}")
+                        progress.progress((len(ids)) / (len(items_strs)), text=f"{len(ids) - 1} / {len(items)} | {item_str}")
                         d_i += 1
                         ids.append(result)
                 except TimeoutError:
