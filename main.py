@@ -133,7 +133,7 @@ input_variables = ["user_request", "genres", "min"],
             "genres": options,
             "min": min,
             })
-        status.update(label="Searching YouTube...", state="running", expanded=True)
+        status.update(label="Searching YouTube...", expanded=True)
         items  = yaml.load(result, Loader=yaml.FullLoader)
         progess = st.progress(0, text="Searching Youtube...")
         ids = []
