@@ -9,6 +9,8 @@ import streamlit as st
 from youtube_search import YoutubeSearch
 import yaml
 import signal
+from langchain.cache import InMemoryCache
+langchain.llm_cache = InMemoryCache()
 
 def setup_player(playlist):
    components.html("""<div id="player"></div>
