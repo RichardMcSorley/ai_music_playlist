@@ -50,7 +50,7 @@ def setup_player(playlist):
 @st.cache_data(show_spinner=False)
 def search_youtube(item):
     try:
-        signal.alarm(5)
+        signal.alarm(2)
         search_results_ = YoutubeSearch(item, max_results=10).to_dict()
         signal.alarm(0)
         search_results = ""
@@ -58,7 +58,7 @@ def search_youtube(item):
         for result in search_results_:
             search_results += f"{i}. {result['title']} - duration {result['duration']}, channel {result['channel']}, views {result['views'] }, publish_time: {result['publish_time']}, index {i} \n"
             i += 1
-        signal.alarm(5)
+        signal.alarm(2)
         index = LLMChain(llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo", cache=True), prompt=prompts.extract_index).run({
             "search_results": search_results,
             "search_request": item,
@@ -72,13 +72,19 @@ def search_youtube(item):
 
 def submit(options, text_input, ids, items, min):
     with st.status("Generating...", expanded=True) as status:
-        result = LLMChain(llm=ChatOpenAI(temperature=1, model="gpt-3.5-turbo", cache=True), prompt=prompts.generate_playlist).run({
-            "user_request": text_input + " " + " ,".join(options),
-            "genres": options,
-            "min": min,
-        })
+        while len(items) < min:
+            result = LLMChain(llm=ChatOpenAI(temperature=1, model="gpt-3.5-turbo", cache=True), prompt=prompts.generate_playlist).run({
+                "user_request": text_input + " " + " ,".join(options),
+                "genres": options,
+                "min": min,
+                "current_list": items,
+            })
+            current_items  = yaml.load(result, Loader=yaml.FullLoader)
+            items = items + current_items
+        if len(items) > min:
+            items = items[:min]
         status.update(label="Searching YouTube...", expanded=True)
-        items  = yaml.load(result, Loader=yaml.FullLoader)
+
         progress = st.progress(0, text="Searching Youtube...")
         ids = []
         d_i = 0
