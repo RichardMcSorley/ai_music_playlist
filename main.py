@@ -84,13 +84,12 @@ def submit(options, text_input, ids, items, min):
 
         progress = st.progress(0, text="Searching Youtube...")
         ids = []
-        d_i = 0
         items_strs = []
         for item in items:
             item_str = yaml.dump(item).replace("\\t", " - ").replace("\"", "")
             items_strs.append(item_str)
         futures_to_item = {}
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=2) as executor:
             # Submit tasks and store future objects in a dictionary
             for item in items_strs:
                 futures_to_item[executor.submit(search_youtube, item)] = item
@@ -105,7 +104,6 @@ def submit(options, text_input, ids, items, min):
                     print(f"Found {result} for {item}")
                     prog = len(ids) / (len(items_strs))
                     progress.progress(prog, text=f"{len(ids)} / {len(items)} | {item_str}")
-                    d_i += 1
                     ids.append(result)
             except TimeoutError:
                 print("Some tasks took too long to complete.")
