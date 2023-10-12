@@ -101,6 +101,7 @@ def submit(options, text_input, ids, items, min):
                         result = future.result()
                         if result is None:
                             continue
+                        print(f"Found {result} for {item}")
                         progress.progress((len(ids)) / (len(items_strs)), text=f"{len(ids) - 1} / {len(items)} | {item_str}")
                         d_i += 1
                         ids.append(result)
