@@ -49,7 +49,6 @@ def setup_player(playlist):
         height=360,
     )
 
-@st.cache_data(show_spinner=False)
 def search_youtube(item):
     try:
         search_results_ = YoutubeSearch(item, max_results=10).to_dict()
