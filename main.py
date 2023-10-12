@@ -104,9 +104,7 @@ def submit(options, text_input, ids, items, min):
                         continue
                     print(f"Found {result} for {item}")
                     prog = len(ids) / (len(items_strs))
-                    if prog > 1:
-                        prog = 1
-                    progress.progress(prog, text=f"{len(ids) - 1} / {len(items)} | {item_str}")
+                    progress.progress(prog, text=f"{len(ids)} / {len(items)} | {item_str}")
                     d_i += 1
                     ids.append(result)
             except TimeoutError:
