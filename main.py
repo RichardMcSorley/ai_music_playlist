@@ -78,7 +78,14 @@ def search_youtube(item):
     return id
 def show_playlist(playlist):
     st.markdown("### Playlist")
-    st.code("\n".join(playlist), language="text")
+    playlist_formatted = []
+    for item in playlist:
+        if "\t" in item:
+            item = item.replace("\t", " - ")
+        item_formatted = f"{item}"
+        playlist_formatted.append(item_formatted)
+    
+    st.code("\n".join(playlist_formatted), language="text")
 
 async def submit(text_input, ids, min, status, progress):
     updated_items = []

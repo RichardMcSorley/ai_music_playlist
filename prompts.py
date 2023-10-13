@@ -18,7 +18,7 @@ You will extract the matching index from the list of songs results from a youtub
 # RULES
 - Do not leave any comments in the output except for the reasoning list.
 - Do not list anything other than the index that matches the song title and artist name.
-- Avoid live performances, remixes, lyric videos, intramental, long videos, covers, karaoke.
+- Avoid live performances, remixes, lyric videos, intramental, long videos, covers, karaoke, choreography.
 - Official music videos are preferred.
 - if some results match, make an educated guess on which one is the best match if possible, even if its one we should avoid.
 
