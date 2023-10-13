@@ -165,6 +165,6 @@ if __name__ == "__main__":
         "page_title": "BeatStream",
         "page_icon": "🎵",
         "layout": "centered",
-        "initial_sidebar_state": "none",
+        "initial_sidebar_state": "auto",
     })
     main()
