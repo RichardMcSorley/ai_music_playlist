@@ -161,4 +161,10 @@ def main():
                 st.error("You must enter a request.")
 
 if __name__ == "__main__":
+    st.set_page_config({
+        "page_title": "BeatStream",
+        "page_icon": "🎵",
+        "layout": "centered",
+        "initial_sidebar_state": "none",
+    })
     main()
