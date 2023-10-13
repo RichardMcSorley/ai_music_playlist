@@ -117,7 +117,6 @@ async def submit(text_input, ids, min, status, progress):
     return ids
 
 def main():
-    st.title("BeatStream", anchor="title")
     st.markdown("""
     Created by Richard McSorley 
     [Email](mailto:rich@mcsorley.co)
