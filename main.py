@@ -118,6 +118,8 @@ async def submit(text_input, ids, min, status, progress):
 
 def main():
     st.markdown("""
+    # :musical_note: BeatStream :musical_note:
+    
     Created by Richard McSorley 
     [Email](mailto:rich@mcsorley.co)
 
