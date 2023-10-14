@@ -136,6 +136,7 @@ def main():
     
     Created by Richard McSorley 
     [Email](mailto:rich@mcsorley.co)
+    & -Corruption [Discord](https://discord.com/users/740502046578311170)
 
     AI powered music playlist generator.
     """)
