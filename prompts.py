@@ -64,6 +64,7 @@ You have worked in the industry for 10+ years crafting playlists for clubs and e
 - Do not wite anything other than the list of songs with their artist name.
 - Song name and artist name must be separated by a tab character.
 - You must match the provided genre(s).
+- Do not produce any duplicates.
 
 USER REQUEST: {user_request}
 

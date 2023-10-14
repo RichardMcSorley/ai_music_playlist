@@ -9,11 +9,33 @@ from youtube_search import YoutubeSearch
 import yaml
 import langchain
 from langchain.cache import SQLiteCache
-langchain.llm_cache = SQLiteCache(database_path=".langchain_cache.db")
+langchain.llm_cache = SQLiteCache(database_path=".cache_storage/langchain_cache.db")
 import prompts
-import default_submit
+import examples
 import numpy as np
 import asyncio
+import sqlite3
+conn = sqlite3.connect('.cache_storage/youtube_cache.db')
+
+def cache_youtube_id_into_sql(id, item):
+    c = conn.cursor()
+    # Create a table to store the data
+    c.execute('''CREATE TABLE IF NOT EXISTS youtube_ids
+                 (item TEXT PRIMARY KEY, id TEXT)''')
+    # Insert data into the table
+    c.execute("INSERT INTO youtube_ids (id, item) VALUES (?, ?)", (id, item))
+    # Commit the changes
+    conn.commit()
+def get_youtube_id_from_sql(item):
+    c = conn.cursor()
+    # Create a table to store the data
+    c.execute('''CREATE TABLE IF NOT EXISTS youtube_ids
+                 (item TEXT PRIMARY KEY, id TEXT)''')
+    # Insert data into the table
+    c.execute("SELECT id FROM youtube_ids WHERE item=?", (item,))
+    # Commit the changes
+    conn.commit()
+    return c.fetchone()
 
 def setup_player(playlist):
     components.html("""<div id="player"></div>
@@ -46,9 +68,12 @@ def setup_player(playlist):
         height=360,
     )
 
-@st.cache_data(show_spinner=False, hash_funcs={})
 def search_youtube(item):
     search_results_ = []
+    id_ = get_youtube_id_from_sql(item)
+    if id_ is not None:
+        print(f"Found {item} - {id_} in cache")
+        return id_[0]
     while len(search_results_) == 0:
         try:
             search_results_ = YoutubeSearch(item, max_results=5).to_dict()
@@ -75,6 +100,7 @@ def search_youtube(item):
     except:
         print(f"ERROR: {index} is not a valid index")
         id = search_results_[0]['id']
+    cache_youtube_id_into_sql(id, item)
     return id
 def show_playlist(playlist):
     st.markdown("### Playlist")
@@ -87,19 +113,21 @@ def show_playlist(playlist):
     
     st.code("\n".join(playlist_formatted), language="text")
 
-async def submit(text_input, ids, min, status, progress):
+async def submit(ids, status, progress):
     updated_items = []
-    while len(updated_items) < min:
+    while len(updated_items) < st.session_state.slider_value:
         result = LLMChain(llm=ChatOpenAI(temperature=1, model="gpt-3.5-turbo", cache=True), prompt=prompts.generate_playlist).run({
-            "user_request": text_input,
-            "min": min,
+            "user_request": st.session_state.text_input_value,
+            "min": st.session_state.slider_value,
             "current_list": updated_items,
         })
-
         current_items = yaml.load(result, Loader=yaml.FullLoader)
         updated_items = updated_items + current_items
-        if len(updated_items) > min:
-            updated_items = updated_items[:min]
+        # remove duplicates
+        updated_items = list(set(updated_items))
+
+        if len(updated_items) > st.session_state.slider_value:
+            updated_items = updated_items[:st.session_state.slider_value]
         np.random.shuffle(updated_items)
 
     st.session_state.current_playlist = updated_items
@@ -110,11 +138,20 @@ async def submit(text_input, ids, min, status, progress):
         result = search_youtube(item)
         progress_value = (len(ids) + 1) / len(updated_items)
         item_text = item.replace("\t", " - ")
-        progress.progress(progress_value, text=f"{len(ids) + 1} / {min}: {item_text}")
+        progress.progress(progress_value, text=f"{len(ids) + 1} / {st.session_state.slider_value}: {item_text}")
         ids.append(result)
 
     status.update(label="Complete!", state="complete", expanded=False)
     return ids
+def show_example(num, cols):
+    st.session_state["example_" + str(num)] = False
+    col = cols[num - 1]
+    button = None
+    with col:
+        button = st.button("Example " + str(num))
+    if button:
+        st.session_state.text_input_value = [examples.example_1, examples.example_2, examples.example_3, examples.example_4][num - 1]
+        st.session_state.slider_value = 5
 
 def main():
     st.markdown("""
@@ -126,34 +163,35 @@ def main():
     AI powered music playlist generator.
     """)
     
-    example = st.button("Example")
+    if "text_input_value" not in st.session_state:
+        st.session_state.text_input_value = ""
+    if "slider_value" not in st.session_state:
+        st.session_state.slider_value = 5
+    if "current_playlist" not in st.session_state:
+        st.session_state.current_playlist = []
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    cols = [col1, col2, col3, col4, col5, col6]
+    show_example(1, cols)
+    show_example(2, cols)
+    show_example(3, cols)
+    show_example(4, cols)
     with st.form(key='playlist_form'):
-        if "text_input_value" not in st.session_state:
-            st.session_state.text_input_value = ""
-        if "slider_value" not in st.session_state:
-            st.session_state.slider_value = 5
-        if "current_playlist" not in st.session_state:
-            st.session_state.current_playlist = []
-        if example:
-            st.session_state.slider_value = 5
-            st.session_state.text_input_value = default_submit.text_input
-        
-        text_input = st.text_area(
+        new_text_input_value = st.text_area(
             "Your request",
             value=st.session_state.text_input_value,
             height=250,
             placeholder="Type your request here... \n\n'I want to listen to something that makes me feel happy, upbeat, and energetic.'",
         )
+        st.session_state.text_input_value = new_text_input_value
         ids = []
-        min = st.slider("How many songs", min_value=2, max_value=50, value=st.session_state.slider_value, step=1)
+        new_slider_value = st.slider("How many songs", min_value=5, max_value=50, value=st.session_state.slider_value, step=5)
+        st.session_state.slider_value = new_slider_value
         submitted = st.form_submit_button('Submit', type="primary")
-        st.session_state.text_input_value = text_input
-        st.session_state.slider_value = min
-        if submitted or example:
-            if len(text_input) > 0:   
+        if submitted:
+            if len(st.session_state.text_input_value) > 0:   
                 with st.status("Generating...", expanded=True) as status:
-                    progress = st.progress(0, text=f"{len(ids)} / {min}")
-                    asyncio.run(submit(text_input, ids, min, status, progress))
+                    progress = st.progress(0, text=f"{len(ids)} / {st.session_state.slider_value}")
+                    asyncio.run(submit(ids, status, progress))
                 if len(ids) > 0:
                     setup_player(ids)
                     st.markdown(f"""Not working? [Listen on Youtube Instead](https://www.youtube.com/watch_videos?video_ids={','.join(ids)})""")
