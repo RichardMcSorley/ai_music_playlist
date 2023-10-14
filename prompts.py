@@ -65,6 +65,7 @@ You have worked in the industry for 10+ years crafting playlists for clubs and e
 - Song name and artist name must be separated by a tab character.
 - You must match the provided genre(s).
 - Do not produce any duplicates.
+- Avoid live performances, remixes, lyric videos, intramental, long videos, covers, karaoke, choreography.
 
 USER REQUEST: {user_request}
 

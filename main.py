@@ -14,28 +14,6 @@ import prompts
 import examples
 import numpy as np
 import asyncio
-import sqlite3
-conn = sqlite3.connect('.cache_storage/youtube_cache.db')
-
-def cache_youtube_id_into_sql(id, item):
-    c = conn.cursor()
-    # Create a table to store the data
-    c.execute('''CREATE TABLE IF NOT EXISTS youtube_ids
-                 (item TEXT PRIMARY KEY, id TEXT)''')
-    # Insert data into the table
-    c.execute("INSERT INTO youtube_ids (id, item) VALUES (?, ?)", (id, item))
-    # Commit the changes
-    conn.commit()
-def get_youtube_id_from_sql(item):
-    c = conn.cursor()
-    # Create a table to store the data
-    c.execute('''CREATE TABLE IF NOT EXISTS youtube_ids
-                 (item TEXT PRIMARY KEY, id TEXT)''')
-    # Insert data into the table
-    c.execute("SELECT id FROM youtube_ids WHERE item=?", (item,))
-    # Commit the changes
-    conn.commit()
-    return c.fetchone()
 
 def setup_player(playlist):
     components.html("""<div id="player"></div>
@@ -67,13 +45,9 @@ def setup_player(playlist):
         .replace("PLAYLIST", json.dumps(playlist)),
         height=360,
     )
-
+@st.cache_data(show_spinner=False, ttl=60*60*24*7)
 def search_youtube(item):
     search_results_ = []
-    id_ = get_youtube_id_from_sql(item)
-    if id_ is not None:
-        print(f"Found {item} - {id_} in cache")
-        return id_[0]
     while len(search_results_) == 0:
         try:
             search_results_ = YoutubeSearch(item, max_results=5).to_dict()
@@ -84,23 +58,26 @@ def search_youtube(item):
     for result in search_results_:
         search_results += f"Index {i}. {result['title']} METADATA: <duration: {result['duration']}, channel: {result['channel']}, views: {result['views'] }, publish_time: {result['publish_time']}>\n"
         i += 1
-    index_yml = LLMChain(llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo", cache=True), prompt=prompts.extract_index).run({
-        "search_results": search_results,
-        "search_request": item,
-    })
-    index = yaml.load(index_yml, Loader=yaml.FullLoader)['index']
-    print(f"""
-    search_results: {search_results}
-    search_request: {item}
-    reasoning: {index_yml}
-    """)
-
+    index = None
+    try:
+        index_yml = LLMChain(llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo", cache=True), prompt=prompts.extract_index).run({
+            "search_results": search_results,
+            "search_request": item,
+        })
+        index = yaml.load(index_yml, Loader=yaml.FullLoader)['index']
+        print(f"""
+        search_results: {search_results}
+        search_request: {item}
+        {index_yml}
+        """)
+    except Exception as e:
+        print(e)
+        index = 0
     try:
         id = search_results_[int(index)]['id']
     except:
         print(f"ERROR: {index} is not a valid index")
         id = search_results_[0]['id']
-    cache_youtube_id_into_sql(id, item)
     return id
 def show_playlist(playlist):
     st.markdown("### Playlist")
