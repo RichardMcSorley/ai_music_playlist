@@ -90,7 +90,7 @@ def submit(ids, status, progress):
         if len(ids) >= 1 and st.session_state.first_video_play == False:
             st.session_state.first_video_play = True
             player = yt_player(auto_play="0")
-            st.write("Playing first song, while we wait...")
+            st.write("Displaying first song, while we wait...")
             player([ids[0]])
 
     status.update(label="Complete!", state="complete", expanded=False)
