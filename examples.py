@@ -1,9 +1,16 @@
+import streamlit as st
+
 example_1 = """
 I like this playlist of songs for programming:
 The Chainsmokers - Don't Let Me Down 
 L'indécis - Cloud Steps 
+Avicii - Wake Me Up
+Alan Walker - Faded
+Kygo - Stole the Show
+Martin Garrix - Animals
+Marshmello - Alone
 
-Create a new list that are related.
+Create a new list that is related.
 """.strip()
 
 # Country Music example
@@ -61,10 +68,33 @@ I need something that will help me focus.
 """.strip()
 
 
-examples = [
-    example_1,
-    example_2,
-    example_3,
-    example_4,
-    example_5,
+
+def get_examples():
+    col1, col2, col3, col4, col5 = st.columns(5)
+    return [
+    {
+        "title": "Coding Music",
+        "prompt": example_1,
+        "col": col1,
+    },
+    {
+        "title": "Country Music",
+        "prompt": example_2,
+        "col": col2,
+    },
+    {
+        "title": "Pop Music",
+        "prompt": example_3,
+        "col": col3,
+    },
+    {
+        "title": "Desperate DJ",
+        "prompt": example_4,
+        "col": col4,
+    },
+    {
+        "title": "Study Music",
+        "prompt": example_5,
+        "col": col5,
+    },
 ]

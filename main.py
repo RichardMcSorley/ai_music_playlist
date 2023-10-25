@@ -89,21 +89,20 @@ def submit(ids, status, progress):
         ids.append(result)
         if len(ids) >= 1 and st.session_state.first_video_play == False:
             st.session_state.first_video_play = True
-            player = yt_player()
+            player = yt_player(auto_play="0")
             st.write("Playing first song, while we wait...")
             player([ids[0]])
 
     status.update(label="Complete!", state="complete", expanded=False)
     st.session_state.complete_search = True
     return ids
-def show_example(num, cols):
-    st.session_state["example_" + str(num)] = False
-    col = cols[num - 1]
+def show_example(example):
+    # st.session_state["example_" + str(num)] = False
     button = None
-    with col:
-        button = st.button("Example " + str(num))
+    with example["col"]:
+        button = st.button(example["title"])
     if button:
-        st.session_state.text_input_value = examples.examples[num - 1]
+        st.session_state.text_input_value = example["prompt"]
         st.session_state.slider_value = 5
 
 def main():
@@ -115,6 +114,9 @@ def main():
     & -Corruption [Discord](https://discord.com/users/740502046578311170)
 
     AI powered music playlist generator.
+    See an example by clicking one of the buttons below.
+
+    Feel free to adjust the request and number of songs.
     """)
     
     if "text_input_value" not in st.session_state:
@@ -123,13 +125,8 @@ def main():
         st.session_state.slider_value = 5
     if "current_playlist" not in st.session_state:
         st.session_state.current_playlist = []
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
-    cols = [col1, col2, col3, col4, col5, col6]
-    show_example(1, cols)
-    show_example(2, cols)
-    show_example(3, cols)
-    show_example(4, cols)
-    show_example(5, cols)
+    for example in examples.get_examples():
+        show_example(example)
     with st.form(key='playlist_form'):
         new_text_input_value = st.text_area(
             "Your request",
@@ -145,8 +142,10 @@ def main():
         if submitted:
             if len(st.session_state.text_input_value) > 0:   
                 with st.status("Generating...", expanded=True) as status:
-                    progress = st.progress(0, text=f"{len(ids)} / {st.session_state.slider_value}")
+                    placeholder = st.empty()
+                    progress = placeholder.progress(0, text=f"{len(ids)} / {st.session_state.slider_value}")
                     ids = submit(ids, status, progress)
+                    placeholder.empty()
                 if len(ids) > 0:
                     player = yt_player()
                     player(ids)
