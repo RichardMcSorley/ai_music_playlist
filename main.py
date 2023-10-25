@@ -1,5 +1,3 @@
-import json
-import streamlit.components.v1 as components
 import dotenv
 dotenv.load_dotenv()
 from langchain.chains.llm import LLMChain
@@ -13,38 +11,8 @@ langchain.llm_cache = SQLiteCache(database_path=".cache_storage/langchain_cache.
 import prompts
 import examples
 import numpy as np
-import asyncio
+from yt_player import yt_player
 
-def setup_player(playlist):
-    components.html("""<div id="player"></div>
-<script>
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    var player;
-    var playlist = PLAYLIST;
-    var previousIndex = 0;
-    function onYouTubeIframeAPIReady() {
-        new YT.Player('player', {
-            width: "100%",
-            playlist: playlist,
-            playerVars: {
-            'playsinline': 1
-            },
-            events: {
-                'onReady': onPlayerReady,
-            }
-        });
-    }
-    function onPlayerReady(event) {
-        event.target.loadPlaylist(playlist)
-        event.target.setLoop(true);
-    }
-</script>"""
-        .replace("PLAYLIST", json.dumps(playlist)),
-        height=360,
-    )
 @st.cache_data(show_spinner=False, ttl=60*60*24*7)
 def search_youtube(item):
     search_results_ = []
@@ -90,7 +58,9 @@ def show_playlist(playlist):
     
     st.code("\n".join(playlist_formatted), language="text")
 
-async def submit(ids, status, progress):
+def submit(ids, status, progress):
+    st.session_state.complete_search = False
+    st.session_state.first_video_play = False
     updated_items = []
     while len(updated_items) < st.session_state.slider_value:
         result = LLMChain(llm=ChatOpenAI(temperature=1, model="gpt-3.5-turbo", cache=True), prompt=prompts.generate_playlist).run({
@@ -117,8 +87,14 @@ async def submit(ids, status, progress):
         item_text = item.replace("\t", " - ")
         progress.progress(progress_value, text=f"{len(ids) + 1} / {st.session_state.slider_value}: {item_text}")
         ids.append(result)
+        if len(ids) >= 1 and st.session_state.first_video_play == False:
+            st.session_state.first_video_play = True
+            player = yt_player()
+            st.write("Playing first song, while we wait...")
+            player([ids[0]])
 
     status.update(label="Complete!", state="complete", expanded=False)
+    st.session_state.complete_search = True
     return ids
 def show_example(num, cols):
     st.session_state["example_" + str(num)] = False
@@ -127,7 +103,7 @@ def show_example(num, cols):
     with col:
         button = st.button("Example " + str(num))
     if button:
-        st.session_state.text_input_value = [examples.example_1, examples.example_2, examples.example_3, examples.example_4][num - 1]
+        st.session_state.text_input_value = examples.examples[num - 1]
         st.session_state.slider_value = 5
 
 def main():
@@ -153,6 +129,7 @@ def main():
     show_example(2, cols)
     show_example(3, cols)
     show_example(4, cols)
+    show_example(5, cols)
     with st.form(key='playlist_form'):
         new_text_input_value = st.text_area(
             "Your request",
@@ -169,9 +146,10 @@ def main():
             if len(st.session_state.text_input_value) > 0:   
                 with st.status("Generating...", expanded=True) as status:
                     progress = st.progress(0, text=f"{len(ids)} / {st.session_state.slider_value}")
-                    asyncio.run(submit(ids, status, progress))
+                    ids = submit(ids, status, progress)
                 if len(ids) > 0:
-                    setup_player(ids)
+                    player = yt_player()
+                    player(ids)
                     st.markdown(f"""Not working? [Listen on Youtube Instead](https://www.youtube.com/watch_videos?video_ids={','.join(ids)})""")
                 show_playlist(st.session_state.current_playlist)
             else:

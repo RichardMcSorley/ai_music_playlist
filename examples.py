@@ -54,3 +54,17 @@ Probably Gangnam's most well-known club, Octagon stands as the 5th best club in 
 Beating out Berlin's infamous Berghain and trailing behind clubs in Las Vegas and Ibiza, Octagon stands as not only the best club in Seoul but the highest-ranked club in Asia on the list.
 Be prepared to drop some serious cash though, as a night at Octagon doesn't come cheap (30,000 won). Open until 6 am, this club is the place to go if you're looking to party your face off. Be warned, as popular as it is, it can get very crowded on weekends!
 """.strip()
+
+example_5 = """
+I'm studying for a big test tomorrow.
+I need something that will help me focus.
+""".strip()
+
+
+examples = [
+    example_1,
+    example_2,
+    example_3,
+    example_4,
+    example_5,
+]
